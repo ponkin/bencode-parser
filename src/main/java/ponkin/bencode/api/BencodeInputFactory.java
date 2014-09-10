@@ -43,12 +43,12 @@ public class BencodeInputFactory {
     private final int stackLimit;
 
 
-    public static BencodeInputFactory getInstance(){
+    public static BencodeInputFactory getInstance() {
         return getInstance(System.getProperties());
     }
 
-    public static BencodeInputFactory getInstance(Properties properties){
-        if(factory == null){
+    public static BencodeInputFactory getInstance(Properties properties) {
+        if (factory == null) {
             factory = new BencodeInputFactory(
                     Integer.parseInt(properties.getProperty(DATA_LIMIT, "83886")),
                     Integer.parseInt(properties.getProperty(COMMAND_LIMIT, "32")),
@@ -59,7 +59,7 @@ public class BencodeInputFactory {
         return factory;
     }
 
-    private BencodeInputFactory(int dataLimit, int commandLimit, int indexLimit, int stackLimit){
+    private BencodeInputFactory(int dataLimit, int commandLimit, int indexLimit, int stackLimit) {
         this.dataLimit = dataLimit;
         this.stackLimit = stackLimit;
         this.commandLimit = commandLimit;
@@ -68,50 +68,86 @@ public class BencodeInputFactory {
     }
 
 
-    public BencodeStreamReader createBencodeStreamReader(String bencodedText) throws IOException{
-        return createBencodeStreamReader(new StringReader(bencodedText));
+    /**
+     * Create parser with no internal copy of input
+     *
+     * @param bencodedText
+     * @return
+     * @throws IOException
+     */
+    public BencodeStreamReader createBencodeStreamReader(String bencodedText) throws IOException {
+        return createBencodeStreamReader(bencodedText.getBytes());
     }
 
+    /**
+     * Create parser with no internal copy of input
+     *
+     * @param data
+     * @return
+     * @throws IOException
+     */
+    public BencodeStreamReader createBencodeStreamReader(byte[] data) throws IOException {
+        final BencodeParser parser = BencodeParser.createDirectParser(data, commandLimit, indexLimit, stackLimit);
+        parser.parse(new InputStreamReader(new ByteArrayInputStream(data)));
+        final ElementIndex index = parser.getElementIndex();
+        return new BencodeStreamReaderImpl(parser.getData(), index.getBuffer());
+    }
 
-    public BencodeStreamReader createBencodeStreamReader(Reader reader) throws IOException{
-        final BencodeParser parser = new BencodeParser(dataLimit, commandLimit, indexLimit, stackLimit); //TODO set properties
+    /**
+     * Create parser with internal input stream copy
+     *
+     * @param reader
+     * @return
+     * @throws IOException
+     */
+
+    public BencodeStreamReader createBencodeStreamReader(Reader reader) throws IOException {
+        final BencodeParser parser = BencodeParser.createBufferedParser(dataLimit, commandLimit, indexLimit, stackLimit);
         parser.parse(reader);
         final ElementIndex index = parser.getElementIndex();
-        return new BencodeStreamReader(){
-
-            final ByteBuffer data = parser.getData();
-            final LongBuffer arrayIndex = index.getBuffer();
-
-            long currentIndex = 0L;
-
-            @Override
-            public byte getEventType() {
-                return (byte)ElementIndex.utype(currentIndex);
-            }
-
-            @Override
-            public InputStream getContent() {
-                byte[] content = new byte[(int)ElementIndex.ulen(currentIndex)];
-                data.position((int)ElementIndex.upos(currentIndex));
-                data.get(content);
-                return new ByteArrayInputStream(content);
-            }
-
-            @Override
-            public boolean hasNext() {
-                return arrayIndex.hasRemaining();
-            }
-
-            @Override
-            public Void next() {
-                currentIndex = arrayIndex.get();
-                return null;
-            }
-
-            @Override
-            public void remove() {
-                throw new UnsupportedOperationException("Can not remove index.");
-            }
-        };
+        return new BencodeStreamReaderImpl(parser.getData(), index.getBuffer());
     }
+}
+
+class BencodeStreamReaderImpl implements BencodeStreamReader {
+
+    private final ByteBuffer data;
+    private final LongBuffer dataIndex;
+
+    BencodeStreamReaderImpl(ByteBuffer data, LongBuffer dataIndex) {
+        this.data = data;
+        this.dataIndex = dataIndex;
+    }
+
+    long currentIndex = 0L;
+
+    @Override
+    public byte getEventType() {
+        return (byte) ElementIndex.utype(currentIndex);
+    }
+
+    @Override
+    public InputStream getContent() {
+        byte[] content = new byte[(int) ElementIndex.ulen(currentIndex)];
+        data.position((int) ElementIndex.upos(currentIndex));
+        data.get(content);
+        return new ByteArrayInputStream(content);
+    }
+
+    @Override
+    public boolean hasNext() {
+        return dataIndex.hasRemaining();
+    }
+
+    @Override
+    public Void next() {
+        currentIndex = dataIndex.get();
+        return null;
+    }
+
+    @Override
+    public void remove() {
+        throw new UnsupportedOperationException("Can not remove index.");
+    }
+
 }

@@ -1,5 +1,7 @@
 package ponkin.bencode.parser;
 
+import ponkin.bencode.api.BencodeBufferFactory;
+import ponkin.bencode.api.BencodeReadBuffer;
 import ponkin.bencode.api.BencodeStreamReader;
 
 import java.io.IOException;
@@ -16,8 +18,8 @@ import java.nio.IntBuffer;
  */
 public class BencodeParser{
 
+    private final BencodeReadBuffer dataBuffer;
 
-    private final ByteBuffer data_buffer;// copy of bencode stream - with limit
     private final ByteBuffer cmd_buffer; // internal command buffer
     private final ElementIndex index; // index of elements over the data_buffer
     private final ElementIndexStack objStack; // temporary index stack stack
@@ -25,11 +27,19 @@ public class BencodeParser{
     private byte dataType = -1; // current element`s data type
     private int byteStringLen = -1; // if element is byte string, variable holds its length
 
-    public BencodeParser(int dataLimit, int commandLimit, int indexLimit, int elementStackLimit){
-        data_buffer = ByteBuffer.allocate(dataLimit);
+    private BencodeParser(BencodeReadBuffer dataBuffer, int commandLimit, int indexLimit, int elementStackLimit){
+        this.dataBuffer = dataBuffer;
         cmd_buffer =  ByteBuffer.wrap(new byte[commandLimit]);
         index = new ElementIndex(indexLimit);
         objStack = new ElementIndexStack(elementStackLimit);
+    }
+
+    public static BencodeParser createBufferedParser(int dataLimit, int commandLimit, int indexLimit, int elementStackLimit){
+        return new BencodeParser(BencodeBufferFactory.createBencodeReadBuffer(dataLimit), commandLimit, indexLimit, elementStackLimit);
+    }
+
+    public static BencodeParser createDirectParser(byte[] data, int commandLimit, int indexLimit, int elementStackLimit){
+        return new BencodeParser(BencodeBufferFactory.createBencodeReadBuffer(data), commandLimit, indexLimit, elementStackLimit);
     }
 
     protected void startDictionary(Reader in) throws IOException {
@@ -61,13 +71,13 @@ public class BencodeParser{
 
     protected void endElement() throws IOException{
         int obj_idx = objStack.pop();
-        index.setLen(obj_idx, data_buffer.position());
+        index.setLen(obj_idx, dataBuffer.position());
         switch((int)index.getType(obj_idx)){
             case BencodeStreamReader.LIST_START:
-                index.addIndex(BencodeStreamReader.LIST_END, data_buffer.position(), 0);
+                index.addIndex(BencodeStreamReader.LIST_END, dataBuffer.position(), 0);
                 break;
             case BencodeStreamReader.DICTIONARY_START:
-                index.addIndex(BencodeStreamReader.DICTIONARY_END, data_buffer.position(), 0);
+                index.addIndex(BencodeStreamReader.DICTIONARY_END, dataBuffer.position(), 0);
                 break;
         }
     }
@@ -76,7 +86,7 @@ public class BencodeParser{
     public void parse(Reader in) throws IOException{
         int b = 0;
         while( (b = in.read()) != -1 ){
-            data_buffer.put((byte)b);
+            dataBuffer.put((byte)b);
             switch(b){
                 case 'l':
                     startList(in);
@@ -102,7 +112,7 @@ public class BencodeParser{
 
 
     protected int addToIndex(Reader in) throws IOException{
-        int pos = data_buffer.position();
+        int pos = dataBuffer.position();
         int len = parseDataType(in);
         return index.addIndex(dataType, pos, len);
     }
@@ -116,7 +126,7 @@ public class BencodeParser{
         if(dataType == BencodeStreamReader.INTEGER){
             int k = 0;
             while( (b = in.read()) != 'e' ){
-                data_buffer.put((byte)b);
+                dataBuffer.put((byte)b);
                 k++;
             }
             return k;
@@ -124,7 +134,7 @@ public class BencodeParser{
             int i = 0;
             while( i++ < byteStringLen){
                 byte с = (byte)in.read();
-                data_buffer.put(с);
+                dataBuffer.put(с);
             }
             return byteStringLen;
         }
@@ -136,7 +146,7 @@ public class BencodeParser{
     }
 
     public ByteBuffer getData(){
-        return this.data_buffer.asReadOnlyBuffer();
+        return this.dataBuffer.getData();
     }
 
 
