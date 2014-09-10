@@ -8,7 +8,9 @@ import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 
 /**
- * Actual parser
+ * Actual parser.
+ * It copies input stream into internal buffer and build element index over that data.
+ *
  * @author Alexey Ponkin
  * @version 1, 10 Sep 2014
  */
@@ -24,7 +26,7 @@ public class BencodeParser{
     private int byteStringLen = -1; // if element is byte string, variable holds its length
 
     public BencodeParser(int dataLimit, int commandLimit, int indexLimit, int elementStackLimit){
-        data_buffer = ByteBuffer.allocateDirect(dataLimit);
+        data_buffer = ByteBuffer.allocate(dataLimit);
         cmd_buffer =  ByteBuffer.wrap(new byte[commandLimit]);
         index = new ElementIndex(indexLimit);
         objStack = new ElementIndexStack(elementStackLimit);
@@ -72,7 +74,6 @@ public class BencodeParser{
 
 
     public void parse(Reader in) throws IOException{
-        //long startTime = System.nanoTime();
         int b = 0;
         while( (b = in.read()) != -1 ){
             data_buffer.put((byte)b);
@@ -97,8 +98,6 @@ public class BencodeParser{
             }
 
         }
-        //long endTime = System.nanoTime();
-        //System.out.format("Parsing time %d\n", (endTime - startTime)/1000000);
     }
 
 
@@ -159,7 +158,7 @@ public class BencodeParser{
 
         public int pop(){
             int pos = buffer.position();
-            int i = buffer.get(pos);
+            int i = buffer.get(pos-1);
             buffer.position(pos-1);
             return i;
         }

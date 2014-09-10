@@ -6,6 +6,9 @@ import java.nio.LongBuffer;
  *  Class represents index over bencode input stream.
  *  Index is packed in long( 3 bit for element type, 32 bit for data length, and 29 for position)
  *
+ *  TODO: Need to pack index in 3 bit - type, 64 bit - length, 64 bit for position.
+ *  TODO: but it will cost more memory usage.
+ *
  *  @author Alexey Ponkin
  *  @version 1, 10 Sep 2014
  */

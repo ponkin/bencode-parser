@@ -50,10 +50,10 @@ public class BencodeInputFactory {
     public static BencodeInputFactory getInstance(Properties properties){
         if(factory == null){
             factory = new BencodeInputFactory(
-                    Integer.parseInt(properties.getProperty(DATA_LIMIT, "8388608")),
+                    Integer.parseInt(properties.getProperty(DATA_LIMIT, "83886")),
                     Integer.parseInt(properties.getProperty(COMMAND_LIMIT, "32")),
-                    Integer.parseInt(properties.getProperty(INDEX_LIMIT, "1048576")),
-                    Integer.parseInt(properties.getProperty(STACK_LIMIT, "1024"))
+                    Integer.parseInt(properties.getProperty(INDEX_LIMIT, "10000")),
+                    Integer.parseInt(properties.getProperty(STACK_LIMIT, "5120"))
             );
         }
         return factory;
