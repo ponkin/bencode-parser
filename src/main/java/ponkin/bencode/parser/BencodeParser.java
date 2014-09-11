@@ -11,7 +11,8 @@ import java.nio.IntBuffer;
 
 /**
  * Actual parser.
- * It copies input stream into internal buffer and build element index over that data.
+ * Read and tokenize input stream.
+ * Creates element index.
  *
  * @author Alexey Ponkin
  * @version 1, 10 Sep 2014

@@ -14,7 +14,7 @@ import java.nio.LongBuffer;
  */
 public class ElementIndex {
 
-    private final LongBuffer buffer; // max number of elements
+    private final LongBuffer buffer; // Buffer for storing indexes
 
     public static final long TYPE_UNMASK = 0xFFFFFFFFE0000000L;
     public static final long TYPE_MASK =   0x7L;
