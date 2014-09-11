@@ -26,6 +26,7 @@ public class ByteDynamicArray extends DynamicArray {
 	
 	@Override
 	protected final void enlarge(){
+		if(data.length == limit()) throw new DynamicArrayLimitExceedException("Buffer limit exceed");
 		int newLen = data.length * 3 / 2;
 		if(newLen > limit()) newLen = limit();
 		byte[] new_data = new byte[newLen];

@@ -67,8 +67,7 @@ public class ElementIndex {
     }
 
     public LongBuffer getBuffer(){
-		buffer.compact();
-		return LongBuffer.wrap(buffer.array()).asReadOnlyBuffer();
+		return LongBuffer.wrap(buffer.array(), 0, buffer.position()).asReadOnlyBuffer();
     }
 
     @Override

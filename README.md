@@ -4,7 +4,7 @@ bencode-parser
 Fast and efficient bencode( torrent file format ) stream parser.
 Very small, no additional dependencies.
 
-It doesn`t create object graph in memory, just create tiny index for underlying data.
+It does not create object graph in memory, just a tiny index over data.
 
 Parser currently is not thread-safe.
 

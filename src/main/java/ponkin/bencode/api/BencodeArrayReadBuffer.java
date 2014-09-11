@@ -31,7 +31,7 @@ public class BencodeArrayReadBuffer implements BencodeReadBuffer{
 
     @Override
     public ByteBuffer getData() {
-        return ByteBuffer.wrap(this.data_buffer, 0, this.position);
+        return ByteBuffer.wrap(this.data_buffer, 0, this.position).asReadOnlyBuffer();
     }
 
 }
