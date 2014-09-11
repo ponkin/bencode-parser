@@ -29,7 +29,6 @@ public class BencodeCopyReadBuffer implements BencodeReadBuffer {
 
     @Override
     public ByteBuffer getData() {
-		this.data_buffer.compact();
-        return ByteBuffer.wrap(this.data_buffer.array()).asReadOnlyBuffer();
+        return ByteBuffer.wrap(this.data_buffer.array(), 0, this.data_buffer.position()).asReadOnlyBuffer();
     }
 }
