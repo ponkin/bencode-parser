@@ -1,5 +1,6 @@
 package ponkin.bencode.parser;
 
+import ponkin.bencode.collection.LongDynamicArray;
 import java.nio.LongBuffer;
 
 /**
@@ -14,7 +15,7 @@ import java.nio.LongBuffer;
  */
 public class ElementIndex {
 
-    private final LongBuffer buffer; // Buffer for storing indexes
+    private final LongDynamicArray buffer; // Buffer for storing indexes
 
     public static final long TYPE_UNMASK = 0xFFFFFFFFE0000000L;
     public static final long TYPE_MASK =   0x7L;
@@ -22,12 +23,12 @@ public class ElementIndex {
     public static final long POS_UMASK =   0x000000001FFFFFFFL;
 
     public ElementIndex(int indexLimit){
-        buffer = LongBuffer.allocate(indexLimit);
+        buffer = new LongDynamicArray(indexLimit, indexLimit);
     }
 
     public int addIndex(byte type, int pos, int len){
         int currPos = buffer.position();
-        buffer.put(pack(type, pos, len));
+        buffer.append(pack(type, pos, len));
         return currPos;
     }
 
@@ -66,9 +67,8 @@ public class ElementIndex {
     }
 
     public LongBuffer getBuffer(){
-        LongBuffer new_lb = buffer.asReadOnlyBuffer();
-        new_lb.rewind();
-        return new_lb;
+		buffer.compact();
+		return LongBuffer.wrap(buffer.array()).asReadOnlyBuffer();
     }
 
     @Override

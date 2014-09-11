@@ -1,5 +1,6 @@
 package ponkin.bencode.api;
 
+import ponkin.bencode.collection.ByteDynamicArray;
 import java.nio.ByteBuffer;
 
 /**
@@ -10,15 +11,15 @@ import java.nio.ByteBuffer;
  */
 public class BencodeCopyReadBuffer implements BencodeReadBuffer {
 
-    final ByteBuffer data_buffer;
+    final ByteDynamicArray data_buffer;
 
     public BencodeCopyReadBuffer(int dataLimit){
-        this.data_buffer  = ByteBuffer.allocate(dataLimit);
+        this.data_buffer  = new ByteDynamicArray( 8024, dataLimit);//TODO remove hardcode
     }
 
     @Override
     public void put(int b) {
-        this.data_buffer.put((byte)b);
+        this.data_buffer.append((byte)b);
     }
 
     @Override
@@ -28,6 +29,7 @@ public class BencodeCopyReadBuffer implements BencodeReadBuffer {
 
     @Override
     public ByteBuffer getData() {
-        return this.data_buffer.asReadOnlyBuffer();
+		this.data_buffer.compact();
+        return ByteBuffer.wrap(this.data_buffer.array()).asReadOnlyBuffer();
     }
 }

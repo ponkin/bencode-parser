@@ -109,6 +109,7 @@ public class BencodeParser{
             }
 
         }
+
     }
 
 
@@ -134,8 +135,8 @@ public class BencodeParser{
         }else if(dataType == BencodeStreamReader.BYTESTRING && byteStringLen > 0){
             int i = 0;
             while( i++ < byteStringLen){
-                byte с = (byte)in.read();
-                dataBuffer.put(с);
+                byte c = (byte)in.read();
+                dataBuffer.put(c);
             }
             return byteStringLen;
         }

@@ -68,7 +68,7 @@ public class ObjectSerializationTest {
                     }
                     break;
                 case BencodeStreamReader.LIST_START:
-                    skills = new LinkedList<>();
+                    skills = new LinkedList<String>();
                     break;
                 case BencodeStreamReader.LIST_END:
                     copyOfMe.setSkills(skills);
