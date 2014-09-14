@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
+import java.util.Stack;
 
 /**
  * Actual parser.
@@ -23,7 +24,7 @@ public class BencodeParser{
 
     private final ByteBuffer cmd_buffer; // internal command buffer
     private final ElementIndex index; // index of elements over the data_buffer
-    private final ElementIndexStack objStack; // temporary index stack stack
+    private final Stack<Integer> objStack; // temporary index stack stack
 
     private byte dataType = -1; // current element`s data type
     private int byteStringLen = -1; // if element is byte string, variable holds its length
@@ -32,7 +33,7 @@ public class BencodeParser{
         this.dataBuffer = dataBuffer;
         cmd_buffer =  ByteBuffer.wrap(new byte[commandLimit]);
         index = new ElementIndex(indexLimit);
-        objStack = new ElementIndexStack(elementStackLimit);
+        objStack = new Stack<Integer>();
     }
 
     public static BencodeParser createBufferedParser(int dataLimit, int commandLimit, int indexLimit, int elementStackLimit){
@@ -156,23 +157,4 @@ public class BencodeParser{
         return new String(buffer.array(), 0, buffer.position()).intern();
     }
 
-    private class ElementIndexStack{
-
-        private final IntBuffer buffer;
-
-        public ElementIndexStack(int limit){
-            buffer = IntBuffer.allocate(limit);
-        }
-
-        public void push(int i){
-            buffer.put(i);
-        }
-
-        public int pop(){
-            int pos = buffer.position();
-            int i = buffer.get(pos-1);
-            buffer.position(pos-1);
-            return i;
-        }
-    }
 }
