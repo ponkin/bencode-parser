@@ -20,7 +20,7 @@ public class ObjectSerializationTest {
 
     @Test
     public void testSerialization() throws Exception{
-        // me want new job)
+        // me wants new job)
         Person me = new Person(
                 "Alexey",
                 "Ponkin",

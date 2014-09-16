@@ -1,7 +1,7 @@
 bencode-parser
 ==============
 
-Fast and efficient bencode( torrent file format ) stream parser.
+Fast and efficient bencode( torrent file format ) pull parser.
 Very small, no additional dependencies.
 
 It does not create object graph in memory, just a tiny index over data.
