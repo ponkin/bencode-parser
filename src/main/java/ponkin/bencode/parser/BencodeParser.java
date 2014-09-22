@@ -6,9 +6,13 @@ import ponkin.bencode.api.BencodeStreamReader;
 
 import java.io.IOException;
 import java.io.Reader;
+import java.nio.CharBuffer;
 import java.nio.ByteBuffer;
+import java.nio.Buffer;
 import java.nio.IntBuffer;
-import java.util.Stack;
+import java.util.Deque;
+import java.util.LinkedList;
+
 
 /**
  * Actual parser.
@@ -22,18 +26,18 @@ public class BencodeParser{
 
     private final BencodeReadBuffer dataBuffer;
 
-    private final ByteBuffer cmd_buffer; // internal command buffer
+    private final CharBuffer cmd_buffer; // internal command buffer
     private final ElementIndex index; // index of elements over the data_buffer
-    private final Stack<Integer> objStack; // temporary index stack stack
+    private final Deque<Integer> objStack; // temporary index stack
 
     private byte dataType = -1; // current element`s data type
     private int byteStringLen = -1; // if element is byte string, variable holds its length
 
     private BencodeParser(BencodeReadBuffer dataBuffer, int commandLimit, int indexLimit, int elementStackLimit){
         this.dataBuffer = dataBuffer;
-        cmd_buffer =  ByteBuffer.wrap(new byte[commandLimit]);
+        cmd_buffer =  CharBuffer.wrap(new char[commandLimit]);
         index = new ElementIndex(indexLimit);
-        objStack = new Stack<Integer>();
+        objStack = new LinkedList<Integer>();
     }
 
     public static BencodeParser createBufferedParser(int dataLimit, int commandLimit, int indexLimit, int elementStackLimit){
@@ -105,7 +109,7 @@ public class BencodeParser{
                 case 'e':
                     endElement();
                     break;
-                default: cmd_buffer.put((byte)b);
+                default: cmd_buffer.put((char)b);
 
             }
 
@@ -153,8 +157,9 @@ public class BencodeParser{
     }
 
 
-    public static String getString(ByteBuffer buffer){
-        return new String(buffer.array(), 0, buffer.position()).intern();
+    public static String getString(CharBuffer buffer){
+		buffer.flip();
+		return buffer.toString();
     }
 
 }
