@@ -28,7 +28,7 @@ public class LongDynamicArray extends DynamicArray {
 	@Override
 	protected final void enlarge(){
 		if(data.length == limit()) throw new DynamicArrayLimitExceedException("Buffer limit exceed");
-		int newLen = data.length * 3 / 2;
+		int newLen = data.length * 2;
 		if(newLen > limit()) newLen = limit();
 		long[] new_data = new long[newLen];
 		System.arraycopy( data, 0, new_data, 0, length() );

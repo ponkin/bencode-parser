@@ -29,7 +29,7 @@ public abstract class DynamicArray {
 	}
 	
 	protected boolean isEnoughSpace(int size){
-		return position + size < length();
+		return position + size < length() * 3 / 2; // load factor 75%
 	}
 	
 	protected abstract int length();
